@@ -4,9 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.util.Objects;
 
 import de.congrace.exp4j.Calculable;
 import de.congrace.exp4j.ExpressionBuilder;
@@ -15,8 +16,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "ifsuldeminas.mch.calc";
 
-    //EXPRESSÕES
-    private Button buttonReset;
     private Button buttonDelete;
     private Button buttonPorcento;
     private Button buttonDivisao;
@@ -56,201 +55,254 @@ public class MainActivity extends AppCompatActivity {
         textViewUltimaExpressao = findViewById(R.id.textViewUltimaExpressaoID);
 
         //EXPRESSOES
-        buttonReset = findViewById(R.id.buttonResetID);
-        buttonReset.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                reset();
-                expressao = "";
-                posResult = false;
-            }
+        //EXPRESSÕES studio recomendou criar uma varivel local e excluir a variavel que eu criei la em cima, pq?
+
+        //CLEAR
+        Button buttonReset = findViewById(R.id.buttonResetID);
+        buttonReset.setOnClickListener(v -> {
+            reset();
+            expressao = "";
+            posResult = false;
         });
 
+        //IGUAL
         buttonIgual = findViewById(R.id.buttonIgualID);
-        buttonIgual.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Calculable avaliadorExpressao = null;
-                try {
+        buttonIgual.setOnClickListener(view -> {
+            Calculable avaliadorExpressao = null;
+            try {
+                if (textViewResultado.length() != 0 && textViewUltimaExpressao.length() != 0){
                     avaliadorExpressao = new ExpressionBuilder(expressao).build();
-
-                    Double resultado = avaliadorExpressao.calculate();
-
-                    textViewUltimaExpressao.setText(expressao);
-                    textViewResultado.setText(resultado.toString());
+                    double resultado = avaliadorExpressao.calculate();
+                    textViewUltimaExpressao.setText(Double.toString(resultado));
+                    textViewResultado.setText("");
+                }else {
                     posResult = true;
-                } catch (Exception e) {
-                    Log.d(TAG, e.getMessage());
+                    avaliadorExpressao = new ExpressionBuilder(expressao).build();
+                    double resultado = avaliadorExpressao.calculate();
+                    textViewUltimaExpressao.setText(expressao);
+                    textViewResultado.setText(Double.toString(resultado));
                 }
+            } catch (Exception e) {
+                Log.d(TAG, Objects.requireNonNull(e.getMessage()));
             }
         });
+
+        //DELETE
+        buttonDelete = findViewById(R.id.buttonDeleteID);
+        buttonDelete.setOnClickListener(v -> {
+            int tam = expressao.length();
+            if (tam > 0) {
+                expressao = expressao.substring(0, tam - 1);
+                textViewUltimaExpressao.setText(expressao);
+            }else{
+                textViewUltimaExpressao.setText("");
+            }
+        });
+
+        //SOMA
+        buttonSoma = findViewById(R.id.buttonSomaID);
+        buttonSoma.setOnClickListener(v -> {
+
+            if (expressao.length() == 0){
+                textViewUltimaExpressao.setText("");
+            }else if (expressao.charAt(expressao.length() - 1) != '+'){
+                expressao += buttonSoma.getText();
+                textViewUltimaExpressao.setText(expressao);
+            }else if (expressao.length() > 0 && (expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%' || expressao.charAt(expressao.length() - 1) == '*')){
+                expressao = expressao.substring(0, expressao.length() - 1);
+                expressao += buttonSoma.getText();
+                textViewUltimaExpressao.setText(expressao);
+            } else if (expressao.charAt(expressao.length() - 1) == '+') {
+                textViewUltimaExpressao.setText(expressao);
+            }
+
+        });
+
+        //SUBTRAÇÃO
+
+        buttonSubtracao = findViewById(R.id.buttonSubtracaoID);
+        buttonSubtracao.setOnClickListener(v -> {
+
+            if (expressao.length() == 0){
+                expressao += buttonSubtracao.getText();
+                textViewUltimaExpressao.setText(expressao);
+            }else if (expressao.charAt(expressao.length() - 1) != '-'){
+                expressao += buttonSubtracao.getText();
+                textViewUltimaExpressao.setText(expressao);
+            }else if (expressao.length() > 0 && (expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%' || expressao.charAt(expressao.length() - 1) == '*')){
+                expressao = expressao.substring(0, expressao.length() - 1);
+                expressao += buttonSubtracao.getText();
+                textViewUltimaExpressao.setText(expressao);
+            } else if (expressao.charAt(expressao.length() - 1) == '-') {
+                textViewUltimaExpressao.setText(expressao);
+            }
+
+        });
+
+        //MULTIPLICAÇÃO
+
+        buttonMultiplicacao = findViewById(R.id.buttonMultiplicacaoID);
+        buttonMultiplicacao.setOnClickListener(v -> {
+
+            if (expressao.length() == 0){
+                textViewUltimaExpressao.setText("");
+            }else if (expressao.charAt(expressao.length() - 1) != '*'){
+                expressao += buttonMultiplicacao.getText();
+                textViewUltimaExpressao.setText(expressao);
+            }else if (expressao.length() > 0 && (expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%')){
+                expressao = expressao.substring(0, expressao.length() - 1);
+                expressao += buttonMultiplicacao.getText();
+                textViewUltimaExpressao.setText(expressao);
+            } else if (expressao.charAt(expressao.length() - 1) == '*') {
+                textViewUltimaExpressao.setText(expressao);
+            }
+
+        });
+
+        //DIVISAO
+
+        //PORCENTAGEM
+
+        //VIRGULA
+
 
         //NUMEROS
 
         //ZERO
         buttonZero = findViewById(R.id.buttonZeroID);
-        buttonZero.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (posResult == true){
-                    reset();
-                    expressao += buttonZero.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                    posResult = false;
-                }else{
-                    expressao += buttonZero.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                }
+        buttonZero.setOnClickListener(v -> {
+            if (posResult){
+                reset();
+                expressao += buttonZero.getText();
+                textViewUltimaExpressao.setText(expressao);
+                posResult = false;
+            }else{
+                expressao += buttonZero.getText();
+                textViewUltimaExpressao.setText(expressao);
             }
         });
         //UM
         buttonUm = findViewById(R.id.buttonUmID);
-        buttonUm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (posResult == true){
-                    reset();
-                    expressao += buttonUm.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                    posResult = false;
-                }else{
-                    expressao += buttonUm.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                }
+        buttonUm.setOnClickListener(v -> {
+            if (posResult){
+                reset();
+                expressao += buttonUm.getText();
+                textViewUltimaExpressao.setText(expressao);
+                posResult = false;
+            }else{
+                expressao += buttonUm.getText();
+                textViewUltimaExpressao.setText(expressao);
             }
         });
         //DOIS
         buttonDois = findViewById(R.id.buttonDoisID);
-        buttonDois.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (posResult == true){
-                    reset();
-                    expressao += buttonDois.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                    posResult = false;
-                }else{
-                    expressao += buttonDois.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                }
+        buttonDois.setOnClickListener(v -> {
+            if (posResult){
+                reset();
+                expressao += buttonDois.getText();
+                textViewUltimaExpressao.setText(expressao);
+                posResult = false;
+            }else{
+                expressao += buttonDois.getText();
+                textViewUltimaExpressao.setText(expressao);
             }
         });
         //TRES
         buttonTres = findViewById(R.id.buttonTresID);
-        buttonTres.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (posResult == true){
-                    reset();
-                    expressao += buttonTres.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                    posResult = false;
-                }else{
-                    expressao += buttonTres.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                }
+        buttonTres.setOnClickListener(v -> {
+            if (posResult){
+                reset();
+                expressao += buttonTres.getText();
+                textViewUltimaExpressao.setText(expressao);
+                posResult = false;
+            }else{
+                expressao += buttonTres.getText();
+                textViewUltimaExpressao.setText(expressao);
             }
         });
         //QUATRO
         buttonQuatro= findViewById(R.id.buttonQuatroID);
-        buttonQuatro.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (posResult == true){
-                    reset();
-                    expressao += buttonQuatro.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                    posResult = false;
-                }else{
-                    expressao += buttonQuatro.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                }
+        buttonQuatro.setOnClickListener(v -> {
+            if (posResult){
+                reset();
+                expressao += buttonQuatro.getText();
+                textViewUltimaExpressao.setText(expressao);
+                posResult = false;
+            }else{
+                expressao += buttonQuatro.getText();
+                textViewUltimaExpressao.setText(expressao);
             }
         });
         //CINCO
         buttonCinco = findViewById(R.id.buttonCincoID);
-        buttonCinco.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (posResult == true){
-                    reset();
-                    expressao += 5;
-                    textViewUltimaExpressao.setText(expressao);
-                    posResult = false;
-                }else{
-                    expressao += buttonCinco.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                }
+        buttonCinco.setOnClickListener(v -> {
+            if (posResult){
+                reset();
+                expressao += buttonCinco.getText();
+                textViewUltimaExpressao.setText(expressao);
+                posResult = false;
+            }else{
+                expressao += buttonCinco.getText();
+                textViewUltimaExpressao.setText(expressao);
             }
         });
         //SEIS
         buttonSeis = findViewById(R.id.buttonSeisID);
-        buttonSeis.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (posResult == true){
-                    reset();
-                    expressao += buttonSeis.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                    posResult = false;
-                }else{
-                    expressao += buttonSeis.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                }
+        buttonSeis.setOnClickListener(v -> {
+            if (posResult){
+                reset();
+                expressao += buttonSeis.getText();
+                textViewUltimaExpressao.setText(expressao);
+                posResult = false;
+            }else{
+                expressao += buttonSeis.getText();
+                textViewUltimaExpressao.setText(expressao);
             }
         });
         //SETE
         buttonSete = findViewById(R.id.buttonSeteID);
-        buttonSete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (posResult == true){
-                    reset();
-                    expressao += buttonSete.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                    posResult = false;
-                }else{
-                    expressao += buttonSete.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                }
+        buttonSete.setOnClickListener(v -> {
+            if (posResult){
+                reset();
+                expressao += buttonSete.getText();
+                textViewUltimaExpressao.setText(expressao);
+                posResult = false;
+            }else{
+                expressao += buttonSete.getText();
+                textViewUltimaExpressao.setText(expressao);
             }
         });
         //OITO
         buttonOito = findViewById(R.id.buttonOitoID);
-        buttonOito.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (posResult == true){
-                    reset();
-                    expressao += buttonOito.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                    posResult = false;
-                }else{
-                    expressao += buttonOito.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                }
+        buttonOito.setOnClickListener(v -> {
+            if (posResult){
+                reset();
+                expressao += buttonOito.getText();
+                textViewUltimaExpressao.setText(expressao);
+                posResult = false;
+            }else{
+                expressao += buttonOito.getText();
+                textViewUltimaExpressao.setText(expressao);
             }
         });
         //NOVE
         buttonNove = findViewById(R.id.buttonNoveID);
-        buttonNove.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (posResult == true){
-                    reset();
-                    expressao += buttonNove.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                    posResult = false;
-                }else{
-                    expressao += buttonNove.getText();
-                    textViewUltimaExpressao.setText(expressao);
-                }
+        buttonNove.setOnClickListener(v -> {
+            if (posResult){
+                reset();
+                expressao += buttonNove.getText();
+                textViewUltimaExpressao.setText(expressao);
+                posResult = false;
+            }else{
+                expressao += buttonNove.getText();
+                textViewUltimaExpressao.setText(expressao);
             }
         });
 
     }
 
     private void reset(){
+        expressao = "";
         textViewResultado.setText("0");
         textViewUltimaExpressao.setText("");
     }
