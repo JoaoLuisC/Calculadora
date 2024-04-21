@@ -126,16 +126,18 @@
         app:layout_constraintBottom_toTopOf="@+id/buttonOitoID"
         app:layout_constraintEnd_toStartOf="@+id/buttonDeleteID"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/buttonBlanckID" />
+        app:layout_constraintStart_toEndOf="@+id/buttonParenthesesID" />
 
     <Button
-        android:id="@+id/buttonBlanckID"
-        android:layout_width="88dp"
+        android:id="@+id/buttonParenthesesID"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/default_padding"
         android:layout_marginBottom="@dimen/button_v_margin"
+        android:text="()"
+        android:textColor="#546E7A"
         android:textSize="@dimen/button_text_size"
-        android:visibility="invisible"
+        android:theme="@style/AppTheme.Other.Button"
         app:layout_constraintBottom_toTopOf="@+id/buttonSeteID"
         app:layout_constraintEnd_toStartOf="@+id/buttonResetID"
         app:layout_constraintHorizontal_bias="0.5"
@@ -148,7 +150,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/default_padding"
         android:layout_marginBottom="@dimen/button_v_margin"
-        android:text="÷"
+        android:text="/"
         android:textSize="@dimen/button_text_size"
         app:layout_constraintBottom_toTopOf="@+id/buttonMultiplicacaoID"
         app:layout_constraintEnd_toEndOf="parent"
@@ -278,7 +280,7 @@
         android:background="@color/gray"
         app:layout_constraintBottom_toTopOf="@+id/buttonDeleteID"
         app:layout_constraintEnd_toEndOf="@+id/buttonPorcentoID"
-        app:layout_constraintStart_toStartOf="@+id/buttonBlanckID" />
+        app:layout_constraintStart_toStartOf="@+id/buttonParenthesesID" />
 
     <TextView
         android:id="@+id/textViewResultadoID"

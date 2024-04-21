@@ -2,13 +2,13 @@ package br.edu.ifsuldeminas.mch.calc;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
-
+import android.widget.Toast;
 import java.util.Objects;
-
 import de.congrace.exp4j.Calculable;
 import de.congrace.exp4j.ExpressionBuilder;
 
@@ -16,16 +16,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "ifsuldeminas.mch.calc";
 
-    private Button buttonDelete;
     private Button buttonPorcento;
     private Button buttonDivisao;
     private Button buttonMultiplicacao;
     private Button buttonSubtracao;
     private Button buttonSoma;
-    private Button buttonIgual;
-    private Button buttonVirgula;
-
-
 
     //NUMEROS
     private Button buttonZero;
@@ -46,6 +41,11 @@ public class MainActivity extends AppCompatActivity {
     private TextView textViewResultado;
     private TextView textViewUltimaExpressao;
 
+    //VARIAVEIS DE TESTE
+    private String resultadoToViewExpressao;
+
+
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,44 +54,56 @@ public class MainActivity extends AppCompatActivity {
         textViewResultado = findViewById(R.id.textViewResultadoID);
         textViewUltimaExpressao = findViewById(R.id.textViewUltimaExpressaoID);
 
-        //EXPRESSOES
-        //EXPRESSÕES studio recomendou criar uma varivel local e excluir a variavel que eu criei la em cima, pq?
-
         //CLEAR
         Button buttonReset = findViewById(R.id.buttonResetID);
         buttonReset.setOnClickListener(v -> {
             reset();
-            expressao = "";
             posResult = false;
         });
 
         //IGUAL
-        buttonIgual = findViewById(R.id.buttonIgualID);
+        Button buttonIgual = findViewById(R.id.buttonIgualID);
         buttonIgual.setOnClickListener(view -> {
-            Calculable avaliadorExpressao = null;
-            try {
-                if (textViewResultado.length() != 0 && textViewUltimaExpressao.length() != 0){
-                    avaliadorExpressao = new ExpressionBuilder(expressao).build();
-                    double resultado = avaliadorExpressao.calculate();
-                    textViewUltimaExpressao.setText(Double.toString(resultado));
-                    textViewResultado.setText("");
-                }else {
-                    posResult = true;
-                    avaliadorExpressao = new ExpressionBuilder(expressao).build();
-                    double resultado = avaliadorExpressao.calculate();
-                    textViewUltimaExpressao.setText(expressao);
-                    textViewResultado.setText(Double.toString(resultado));
+
+            Calculable avaliadorExpressao;
+
+            if(expressao.isEmpty()){
+                reset();
+            }else{
+
+                try {
+                    if (isLastCharOperator(expressao) || expressao.charAt(expressao.length() - 1) == '('){
+                        Toast.makeText(getApplicationContext(), "Formato usado inválido", Toast.LENGTH_SHORT).show();
+                    }else {
+                        avaliadorExpressao = new ExpressionBuilder(expressao).build();
+                        double resultado = avaliadorExpressao.calculate();
+                        textViewUltimaExpressao.setText(expressao);
+
+                        String resultadoFormatado = Double.toString(resultado);
+                        resultadoFormatado = removeDecimalIfZero(resultadoFormatado);
+
+                        textViewResultado.setText(resultadoFormatado);
+                        resultadoToViewExpressao = resultadoFormatado;
+                        posResult = true;
+                    }
+                } catch (Exception e) {
+                    Log.d(TAG, Objects.requireNonNull(e.getMessage()));
                 }
-            } catch (Exception e) {
-                Log.d(TAG, Objects.requireNonNull(e.getMessage()));
             }
+
+
         });
 
         //DELETE
-        buttonDelete = findViewById(R.id.buttonDeleteID);
+        Button buttonDelete = findViewById(R.id.buttonDeleteID);
         buttonDelete.setOnClickListener(v -> {
             int tam = expressao.length();
-            if (tam > 0) {
+
+            if(textViewResultado.getText() != "") {
+                expressao = (String) textViewResultado.getText();
+                textViewUltimaExpressao.setText(textViewResultado.getText());
+                textViewResultado.setText("");
+            }else if (tam > 0) {
                 expressao = expressao.substring(0, tam - 1);
                 textViewUltimaExpressao.setText(expressao);
             }else{
@@ -103,16 +115,22 @@ public class MainActivity extends AppCompatActivity {
         buttonSoma = findViewById(R.id.buttonSomaID);
         buttonSoma.setOnClickListener(v -> {
 
-            if (expressao.length() == 0){
+            if(posResult){
+                expressao = resultadoToViewExpressao;
+                textViewUltimaExpressao.setText(expressao);
+                textViewResultado.setText("");
+                posResult = false;
+            }
+
+            if (expressao.isEmpty()){
                 textViewUltimaExpressao.setText("");
-            }else if (expressao.charAt(expressao.length() - 1) != '+'){
-                expressao += buttonSoma.getText();
+            }else if (expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%' || expressao.charAt(expressao.length() - 1) == '*') {
+                expressao = expressao.substring(0, expressao.length() - 1) + buttonSoma.getText();
                 textViewUltimaExpressao.setText(expressao);
-            }else if (expressao.length() > 0 && (expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%' || expressao.charAt(expressao.length() - 1) == '*')){
-                expressao = expressao.substring(0, expressao.length() - 1);
-                expressao += buttonSoma.getText();
+            }else  if (expressao.charAt(expressao.length() - 1) == '+') {
                 textViewUltimaExpressao.setText(expressao);
-            } else if (expressao.charAt(expressao.length() - 1) == '+') {
+            }else if(!isLastCharOperator(expressao)){
+                expressao += buttonSoma.getText();
                 textViewUltimaExpressao.setText(expressao);
             }
 
@@ -123,17 +141,22 @@ public class MainActivity extends AppCompatActivity {
         buttonSubtracao = findViewById(R.id.buttonSubtracaoID);
         buttonSubtracao.setOnClickListener(v -> {
 
-            if (expressao.length() == 0){
-                expressao += buttonSubtracao.getText();
+            if(posResult){
+                expressao = resultadoToViewExpressao;
                 textViewUltimaExpressao.setText(expressao);
-            }else if (expressao.charAt(expressao.length() - 1) != '-'){
-                expressao += buttonSubtracao.getText();
+                textViewResultado.setText("");
+                posResult = false;
+            }
+
+            if (expressao.isEmpty()){
+                textViewUltimaExpressao.setText("");
+            }else if (expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%' || expressao.charAt(expressao.length() - 1) == '*') {
+                expressao = expressao.substring(0, expressao.length() - 1) + buttonSubtracao.getText();
                 textViewUltimaExpressao.setText(expressao);
-            }else if (expressao.length() > 0 && (expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%' || expressao.charAt(expressao.length() - 1) == '*')){
-                expressao = expressao.substring(0, expressao.length() - 1);
-                expressao += buttonSubtracao.getText();
+            }else  if (expressao.charAt(expressao.length() - 1) == '-') {
                 textViewUltimaExpressao.setText(expressao);
-            } else if (expressao.charAt(expressao.length() - 1) == '-') {
+            }else if(!isLastCharOperator(expressao)){
+                expressao += buttonSubtracao.getText();
                 textViewUltimaExpressao.setText(expressao);
             }
 
@@ -144,16 +167,22 @@ public class MainActivity extends AppCompatActivity {
         buttonMultiplicacao = findViewById(R.id.buttonMultiplicacaoID);
         buttonMultiplicacao.setOnClickListener(v -> {
 
-            if (expressao.length() == 0){
+            if(posResult){
+                expressao = resultadoToViewExpressao;
+                textViewUltimaExpressao.setText(expressao);
+                textViewResultado.setText("");
+                posResult = false;
+            }
+
+            if (expressao.isEmpty()){
                 textViewUltimaExpressao.setText("");
-            }else if (expressao.charAt(expressao.length() - 1) != '*'){
-                expressao += buttonMultiplicacao.getText();
+            }else if (expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%') {
+                expressao = expressao.substring(0, expressao.length() - 1) + buttonMultiplicacao.getText();
                 textViewUltimaExpressao.setText(expressao);
-            }else if (expressao.length() > 0 && (expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%')){
-                expressao = expressao.substring(0, expressao.length() - 1);
-                expressao += buttonMultiplicacao.getText();
+            }else  if (expressao.charAt(expressao.length() - 1) == '*') {
                 textViewUltimaExpressao.setText(expressao);
-            } else if (expressao.charAt(expressao.length() - 1) == '*') {
+            }else if(!isLastCharOperator(expressao)){
+                expressao += buttonMultiplicacao.getText();
                 textViewUltimaExpressao.setText(expressao);
             }
 
@@ -161,16 +190,108 @@ public class MainActivity extends AppCompatActivity {
 
         //DIVISAO
 
+        buttonDivisao = findViewById(R.id.buttonDivisaoID);
+        buttonDivisao.setOnClickListener(v -> {
+
+            if(posResult){
+                expressao = resultadoToViewExpressao;
+                textViewUltimaExpressao.setText(expressao);
+                textViewResultado.setText("");
+                posResult = false;
+            }
+
+            if (expressao.isEmpty()){
+                textViewUltimaExpressao.setText("");
+            }else if (expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '%' || expressao.charAt(expressao.length() - 1) == '*') {
+                expressao = expressao.substring(0, expressao.length() - 1) + buttonDivisao.getText();
+                textViewUltimaExpressao.setText(expressao);
+            }else  if (expressao.charAt(expressao.length() - 1) == '/') {
+                textViewUltimaExpressao.setText(expressao);
+            }else if(!isLastCharOperator(expressao)){
+                expressao += buttonDivisao.getText();
+                textViewUltimaExpressao.setText(expressao);
+            }
+
+        });
+
         //PORCENTAGEM
 
-        //VIRGULA
+        buttonPorcento = findViewById(R.id.buttonPorcentoID);
+        buttonPorcento.setOnClickListener(v -> {
 
+            if(posResult){
+                expressao = resultadoToViewExpressao;
+                textViewUltimaExpressao.setText(expressao);
+                textViewResultado.setText("");
+                posResult = false;
+            }
+
+            if (expressao.isEmpty()){
+                textViewUltimaExpressao.setText("");
+            }else if (expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '*') {
+                expressao = expressao.substring(0, expressao.length() - 1) + buttonPorcento.getText();
+                textViewUltimaExpressao.setText(expressao);
+            }else  if (expressao.charAt(expressao.length() - 1) == '%') {
+                textViewUltimaExpressao.setText(expressao);
+            }else if(!isLastCharOperator(expressao)){
+                expressao += buttonPorcento.getText();
+                textViewUltimaExpressao.setText(expressao);
+            }
+
+        });
+
+        //VIRGULA
+        Button buttonVirgula = findViewById(R.id.buttonVirgulaID);
+        buttonVirgula.setOnClickListener(v -> {
+
+            if (expressao.isEmpty()){
+                textViewUltimaExpressao.setText("");
+            }else if (expressao.charAt(expressao.length() - 1) == '.' || expressao.charAt(expressao.length() - 1) == '(' ||expressao.charAt(expressao.length() - 1) == ')') {
+                textViewUltimaExpressao.setText(expressao);
+            }else if (isLastCharOperator(expressao)) {
+                textViewUltimaExpressao.setText(expressao);
+            }else if (!isLastCharOperator(expressao)) {
+                if (canAddDecimal(expressao)){
+                    expressao += ".";
+                    textViewUltimaExpressao.setText(expressao);
+                }else{
+                    textViewUltimaExpressao.setText(expressao);
+                }
+            }
+
+
+        });
+
+        //PARENTESES
+        Button buttonParenteses = findViewById(R.id.buttonParenthesesID);
+        buttonParenteses.setOnClickListener(v ->{
+
+
+            if (expressao.isEmpty() ){
+                expressao += "(";
+                textViewUltimaExpressao.setText(expressao);
+            } else if (!isPossibleToAddParentheses(expressao)) {
+                if (expressao.charAt(expressao.length() - 1) == '(' || isLastCharOperator(expressao) ){
+                    textViewUltimaExpressao.setText(expressao);
+                }else{
+                    expressao += ")";
+                    textViewUltimaExpressao.setText(expressao);
+                }
+            } else if(expressao.charAt(expressao.length() - 1) == '('){
+                textViewUltimaExpressao.setText(expressao);
+            }else  if (isLastCharOperator(expressao)){
+                expressao += "(";
+                textViewUltimaExpressao.setText(expressao);
+            }
+
+        });
 
         //NUMEROS
 
         //ZERO
         buttonZero = findViewById(R.id.buttonZeroID);
         buttonZero.setOnClickListener(v -> {
+
             if (posResult){
                 reset();
                 expressao += buttonZero.getText();
@@ -306,4 +427,62 @@ public class MainActivity extends AppCompatActivity {
         textViewResultado.setText("0");
         textViewUltimaExpressao.setText("");
     }
+
+    private boolean isLastCharOperator(String expressao){
+        return expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%' || expressao.charAt(expressao.length() - 1) == '*';
+    }
+
+    private boolean isPossibleToAddParentheses(String expression) {
+        int openParenthesesCount = 0;
+        int closeParenthesesCount = 0;
+
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+            if (c == '(') {
+                openParenthesesCount++;
+            } else if (c == ')') {
+                closeParenthesesCount++;
+            }
+        }
+
+        return openParenthesesCount == closeParenthesesCount;
+    }
+
+    private String removeDecimalIfZero(String expressao) {
+        try {
+            double numero = Double.parseDouble(expressao);
+            if (hasDecimalPart(numero)) {
+                return expressao;
+            } else {
+                if (expressao.contains(".0")) {
+                    expressao = expressao.substring(0, expressao.indexOf("."));
+                }
+                return expressao;
+            }
+        } catch (NumberFormatException e) {
+            return expressao;
+        }
+    }
+
+    public boolean hasDecimalPart(double number) {
+        int integerPart = (int) number;
+        double decimalPart = number - integerPart;
+        return decimalPart != 0;
+    }
+
+    private boolean canAddDecimal(String expressao) {
+
+        for (int i = expressao.length() - 1; i >= 0; i--) {
+            char c = expressao.charAt(i);
+
+            if (c == '+' || c == '-' || c == '*' || c == '/' || c == '(') {
+                return true;
+            }else if (c == '.') {
+                return false;
+            }
+
+        }
+        return true;
+    }
+
 }
