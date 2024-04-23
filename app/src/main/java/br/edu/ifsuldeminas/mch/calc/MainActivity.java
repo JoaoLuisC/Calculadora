@@ -1,7 +1,7 @@
 package br.edu.ifsuldeminas.mch.calc;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,34 +16,12 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "ifsuldeminas.mch.calc";
 
-    private Button buttonPorcento;
-    private Button buttonDivisao;
-    private Button buttonMultiplicacao;
-    private Button buttonSubtracao;
-    private Button buttonSoma;
-
-    //NUMEROS
-    private Button buttonZero;
-    private Button buttonUm;
-    private Button buttonDois;
-    private Button buttonTres;
-    private Button buttonQuatro;
-    private Button buttonCinco;
-    private Button buttonSeis;
-    private Button buttonSete;
-    private Button buttonOito;
-    private Button buttonNove;
-
-
     //TEXTOS
     private boolean posResult = false;
     private String expressao = "";
     private TextView textViewResultado;
     private TextView textViewUltimaExpressao;
-
-    //VARIAVEIS DE TESTE
     private String resultadoToViewExpressao;
-
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -70,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
             if(expressao.isEmpty()){
                 reset();
             }else{
-
                 try {
                     if (isLastCharOperator(expressao) || expressao.charAt(expressao.length() - 1) == '('){
                         Toast.makeText(getApplicationContext(), "Formato usado inválido", Toast.LENGTH_SHORT).show();
@@ -90,8 +67,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, Objects.requireNonNull(e.getMessage()));
                 }
             }
-
-
         });
 
         //DELETE
@@ -99,11 +74,7 @@ public class MainActivity extends AppCompatActivity {
         buttonDelete.setOnClickListener(v -> {
             int tam = expressao.length();
 
-            if(textViewResultado.getText() != "") {
-                expressao = (String) textViewResultado.getText();
-                textViewUltimaExpressao.setText(textViewResultado.getText());
-                textViewResultado.setText("");
-            }else if (tam > 0) {
+            if (tam > 0) {
                 expressao = expressao.substring(0, tam - 1);
                 textViewUltimaExpressao.setText(expressao);
             }else{
@@ -112,15 +83,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //SOMA
-        buttonSoma = findViewById(R.id.buttonSomaID);
+        Button buttonSoma = findViewById(R.id.buttonSomaID);
         buttonSoma.setOnClickListener(v -> {
 
-            if(posResult){
-                expressao = resultadoToViewExpressao;
-                textViewUltimaExpressao.setText(expressao);
-                textViewResultado.setText("");
-                posResult = false;
-            }
+            handleResultPosition();
 
             if (expressao.isEmpty()){
                 textViewUltimaExpressao.setText("");
@@ -133,20 +99,13 @@ public class MainActivity extends AppCompatActivity {
                 expressao += buttonSoma.getText();
                 textViewUltimaExpressao.setText(expressao);
             }
-
         });
 
         //SUBTRAÇÃO
-
-        buttonSubtracao = findViewById(R.id.buttonSubtracaoID);
+        Button buttonSubtracao = findViewById(R.id.buttonSubtracaoID);
         buttonSubtracao.setOnClickListener(v -> {
 
-            if(posResult){
-                expressao = resultadoToViewExpressao;
-                textViewUltimaExpressao.setText(expressao);
-                textViewResultado.setText("");
-                posResult = false;
-            }
+            handleResultPosition();
 
             if (expressao.isEmpty()){
                 textViewUltimaExpressao.setText("");
@@ -159,85 +118,69 @@ public class MainActivity extends AppCompatActivity {
                 expressao += buttonSubtracao.getText();
                 textViewUltimaExpressao.setText(expressao);
             }
-
         });
 
         //MULTIPLICAÇÃO
-
-        buttonMultiplicacao = findViewById(R.id.buttonMultiplicacaoID);
+        Button buttonMultiplicacao = findViewById(R.id.buttonMultiplicacaoID);
         buttonMultiplicacao.setOnClickListener(v -> {
 
-            if(posResult){
-                expressao = resultadoToViewExpressao;
-                textViewUltimaExpressao.setText(expressao);
-                textViewResultado.setText("");
-                posResult = false;
-            }
+            handleResultPosition();
 
             if (expressao.isEmpty()){
                 textViewUltimaExpressao.setText("");
+            }else if ((expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-') && expressao.charAt(expressao.length() - 2) == '(') {
+                textViewUltimaExpressao.setText(expressao);
             }else if (expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%') {
                 expressao = expressao.substring(0, expressao.length() - 1) + buttonMultiplicacao.getText();
                 textViewUltimaExpressao.setText(expressao);
-            }else  if (expressao.charAt(expressao.length() - 1) == '*') {
+            }else  if (expressao.charAt(expressao.length() - 1) == '*' || expressao.charAt(expressao.length() - 1) == '(') {
                 textViewUltimaExpressao.setText(expressao);
             }else if(!isLastCharOperator(expressao)){
                 expressao += buttonMultiplicacao.getText();
                 textViewUltimaExpressao.setText(expressao);
             }
-
         });
 
         //DIVISAO
-
-        buttonDivisao = findViewById(R.id.buttonDivisaoID);
+        Button buttonDivisao = findViewById(R.id.buttonDivisaoID);
         buttonDivisao.setOnClickListener(v -> {
 
-            if(posResult){
-                expressao = resultadoToViewExpressao;
-                textViewUltimaExpressao.setText(expressao);
-                textViewResultado.setText("");
-                posResult = false;
-            }
+            handleResultPosition();
 
             if (expressao.isEmpty()){
                 textViewUltimaExpressao.setText("");
+            }else if ((expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-') && expressao.charAt(expressao.length() - 2) == '(') {
+                textViewUltimaExpressao.setText(expressao);
             }else if (expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '%' || expressao.charAt(expressao.length() - 1) == '*') {
                 expressao = expressao.substring(0, expressao.length() - 1) + buttonDivisao.getText();
                 textViewUltimaExpressao.setText(expressao);
-            }else  if (expressao.charAt(expressao.length() - 1) == '/') {
+            }else  if (expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '(') {
                 textViewUltimaExpressao.setText(expressao);
             }else if(!isLastCharOperator(expressao)){
                 expressao += buttonDivisao.getText();
                 textViewUltimaExpressao.setText(expressao);
             }
-
         });
 
         //PORCENTAGEM
-
-        buttonPorcento = findViewById(R.id.buttonPorcentoID);
+        Button buttonPorcento = findViewById(R.id.buttonPorcentoID);
         buttonPorcento.setOnClickListener(v -> {
 
-            if(posResult){
-                expressao = resultadoToViewExpressao;
-                textViewUltimaExpressao.setText(expressao);
-                textViewResultado.setText("");
-                posResult = false;
-            }
+            handleResultPosition();
 
             if (expressao.isEmpty()){
                 textViewUltimaExpressao.setText("");
+            }else if ((expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-') && expressao.charAt(expressao.length() - 2) == '(') {
+                textViewUltimaExpressao.setText(expressao);
             }else if (expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '*') {
                 expressao = expressao.substring(0, expressao.length() - 1) + buttonPorcento.getText();
                 textViewUltimaExpressao.setText(expressao);
-            }else  if (expressao.charAt(expressao.length() - 1) == '%') {
+            }else  if (expressao.charAt(expressao.length() - 1) == '%' || expressao.charAt(expressao.length() - 1) == '(') {
                 textViewUltimaExpressao.setText(expressao);
             }else if(!isLastCharOperator(expressao)){
                 expressao += buttonPorcento.getText();
                 textViewUltimaExpressao.setText(expressao);
             }
-
         });
 
         //VIRGULA
@@ -258,14 +201,11 @@ public class MainActivity extends AppCompatActivity {
                     textViewUltimaExpressao.setText(expressao);
                 }
             }
-
-
         });
 
         //PARENTESES
         Button buttonParenteses = findViewById(R.id.buttonParenthesesID);
         buttonParenteses.setOnClickListener(v ->{
-
 
             if (expressao.isEmpty() ){
                 expressao += "(";
@@ -283,155 +223,28 @@ public class MainActivity extends AppCompatActivity {
                 expressao += "(";
                 textViewUltimaExpressao.setText(expressao);
             }
-
         });
 
         //NUMEROS
-
-        //ZERO
-        buttonZero = findViewById(R.id.buttonZeroID);
-        buttonZero.setOnClickListener(v -> {
-
-            if (posResult){
-                reset();
-                expressao += buttonZero.getText();
-                textViewUltimaExpressao.setText(expressao);
-                posResult = false;
-            }else{
-                expressao += buttonZero.getText();
-                textViewUltimaExpressao.setText(expressao);
-            }
-        });
-        //UM
-        buttonUm = findViewById(R.id.buttonUmID);
-        buttonUm.setOnClickListener(v -> {
-            if (posResult){
-                reset();
-                expressao += buttonUm.getText();
-                textViewUltimaExpressao.setText(expressao);
-                posResult = false;
-            }else{
-                expressao += buttonUm.getText();
-                textViewUltimaExpressao.setText(expressao);
-            }
-        });
-        //DOIS
-        buttonDois = findViewById(R.id.buttonDoisID);
-        buttonDois.setOnClickListener(v -> {
-            if (posResult){
-                reset();
-                expressao += buttonDois.getText();
-                textViewUltimaExpressao.setText(expressao);
-                posResult = false;
-            }else{
-                expressao += buttonDois.getText();
-                textViewUltimaExpressao.setText(expressao);
-            }
-        });
-        //TRES
-        buttonTres = findViewById(R.id.buttonTresID);
-        buttonTres.setOnClickListener(v -> {
-            if (posResult){
-                reset();
-                expressao += buttonTres.getText();
-                textViewUltimaExpressao.setText(expressao);
-                posResult = false;
-            }else{
-                expressao += buttonTres.getText();
-                textViewUltimaExpressao.setText(expressao);
-            }
-        });
-        //QUATRO
-        buttonQuatro= findViewById(R.id.buttonQuatroID);
-        buttonQuatro.setOnClickListener(v -> {
-            if (posResult){
-                reset();
-                expressao += buttonQuatro.getText();
-                textViewUltimaExpressao.setText(expressao);
-                posResult = false;
-            }else{
-                expressao += buttonQuatro.getText();
-                textViewUltimaExpressao.setText(expressao);
-            }
-        });
-        //CINCO
-        buttonCinco = findViewById(R.id.buttonCincoID);
-        buttonCinco.setOnClickListener(v -> {
-            if (posResult){
-                reset();
-                expressao += buttonCinco.getText();
-                textViewUltimaExpressao.setText(expressao);
-                posResult = false;
-            }else{
-                expressao += buttonCinco.getText();
-                textViewUltimaExpressao.setText(expressao);
-            }
-        });
-        //SEIS
-        buttonSeis = findViewById(R.id.buttonSeisID);
-        buttonSeis.setOnClickListener(v -> {
-            if (posResult){
-                reset();
-                expressao += buttonSeis.getText();
-                textViewUltimaExpressao.setText(expressao);
-                posResult = false;
-            }else{
-                expressao += buttonSeis.getText();
-                textViewUltimaExpressao.setText(expressao);
-            }
-        });
-        //SETE
-        buttonSete = findViewById(R.id.buttonSeteID);
-        buttonSete.setOnClickListener(v -> {
-            if (posResult){
-                reset();
-                expressao += buttonSete.getText();
-                textViewUltimaExpressao.setText(expressao);
-                posResult = false;
-            }else{
-                expressao += buttonSete.getText();
-                textViewUltimaExpressao.setText(expressao);
-            }
-        });
-        //OITO
-        buttonOito = findViewById(R.id.buttonOitoID);
-        buttonOito.setOnClickListener(v -> {
-            if (posResult){
-                reset();
-                expressao += buttonOito.getText();
-                textViewUltimaExpressao.setText(expressao);
-                posResult = false;
-            }else{
-                expressao += buttonOito.getText();
-                textViewUltimaExpressao.setText(expressao);
-            }
-        });
-        //NOVE
-        buttonNove = findViewById(R.id.buttonNoveID);
-        buttonNove.setOnClickListener(v -> {
-            if (posResult){
-                reset();
-                expressao += buttonNove.getText();
-                textViewUltimaExpressao.setText(expressao);
-                posResult = false;
-            }else{
-                expressao += buttonNove.getText();
-                textViewUltimaExpressao.setText(expressao);
-            }
-        });
-
+        setupNumericButton(findViewById(R.id.buttonZeroID));
+        setupNumericButton(findViewById(R.id.buttonUmID));
+        setupNumericButton(findViewById(R.id.buttonDoisID));
+        setupNumericButton(findViewById(R.id.buttonTresID));
+        setupNumericButton(findViewById(R.id.buttonQuatroID));
+        setupNumericButton(findViewById(R.id.buttonCincoID));
+        setupNumericButton(findViewById(R.id.buttonSeisID));
+        setupNumericButton(findViewById(R.id.buttonSeteID));
+        setupNumericButton(findViewById(R.id.buttonOitoID));
+        setupNumericButton(findViewById(R.id.buttonNoveID));
     }
-
     private void reset(){
         expressao = "";
         textViewResultado.setText("0");
         textViewUltimaExpressao.setText("");
     }
-
     private boolean isLastCharOperator(String expressao){
         return expressao.charAt(expressao.length() - 1) == '+' || expressao.charAt(expressao.length() - 1) == '-' || expressao.charAt(expressao.length() - 1) == '/' || expressao.charAt(expressao.length() - 1) == '%' || expressao.charAt(expressao.length() - 1) == '*';
     }
-
     private boolean isPossibleToAddParentheses(String expression) {
         int openParenthesesCount = 0;
         int closeParenthesesCount = 0;
@@ -447,7 +260,6 @@ public class MainActivity extends AppCompatActivity {
 
         return openParenthesesCount == closeParenthesesCount;
     }
-
     private String removeDecimalIfZero(String expressao) {
         try {
             double numero = Double.parseDouble(expressao);
@@ -463,14 +275,12 @@ public class MainActivity extends AppCompatActivity {
             return expressao;
         }
     }
-
     public boolean hasDecimalPart(double number) {
         int integerPart = (int) number;
         double decimalPart = number - integerPart;
         return decimalPart != 0;
     }
-
-    private boolean canAddDecimal(String expressao) {
+    private boolean canAddDecimal(@NonNull String expressao) {
 
         for (int i = expressao.length() - 1; i >= 0; i--) {
             char c = expressao.charAt(i);
@@ -480,9 +290,28 @@ public class MainActivity extends AppCompatActivity {
             }else if (c == '.') {
                 return false;
             }
-
         }
         return true;
     }
-
+    private void setupNumericButton(Button button) {
+        button.setOnClickListener(v -> {
+            if (posResult){
+                reset();
+                expressao += button.getText();
+                textViewUltimaExpressao.setText(expressao);
+                posResult = false;
+            } else {
+                expressao += button.getText();
+                textViewUltimaExpressao.setText(expressao);
+            }
+        });
+    }
+    private void handleResultPosition() {
+        if (posResult) {
+            expressao = resultadoToViewExpressao;
+            textViewUltimaExpressao.setText(expressao);
+            textViewResultado.setText("");
+            posResult = false;
+        }
+    }
 }
